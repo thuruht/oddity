@@ -1,4 +1,4 @@
-const CACHE_NAME = 'odd-mapchan-v1';
+const CACHE_NAME = 'odd-mapchan-v2';
 const CACHE_URLS = [
     '/',
     '/style.css',

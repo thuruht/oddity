@@ -60,12 +60,33 @@ api.post('/locations', async (c) => {
             return c.json({ error: 'Missing required fields or valid image.' }, 400);
         }
 
-        // Add image validation
-        if (image.size > 5 * 1024 * 1024) { // 5MB limit
-            return c.json({ error: 'Image too large (max 5MB)' }, 400);
+        // Add media validation for images, videos, and audio
+        const maxSizes = {
+            image: 5 * 1024 * 1024,  // 5MB
+            video: 25 * 1024 * 1024, // 25MB
+            audio: 10 * 1024 * 1024  // 10MB
+        };
+        
+        const allowedTypes = [
+            // Images
+            'image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/avif', 'image/gif', 'image/bmp', 'image/svg+xml',
+            // Videos  
+            'video/mp4', 'video/webm', 'video/ogg', 'video/quicktime', 'video/x-msvideo',
+            // Audio
+            'audio/mp3', 'audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/aac', 'audio/x-m4a', 'audio/flac'
+        ];
+        
+        if (!allowedTypes.includes(image.type)) {
+            return c.json({ error: 'Invalid media format. Supported: Images (PNG, JPEG, GIF, WebP, AVIF, BMP, SVG), Videos (MP4, WebM, OGG, MOV, AVI), Audio (MP3, WAV, OGG, AAC, M4A, FLAC)' }, 400);
         }
-        if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(image.type)) {
-            return c.json({ error: 'Invalid image format' }, 400);
+        
+        // Check file size based on media type
+        const mediaType = image.type.split('/')[0] as keyof typeof maxSizes;
+        const maxSize = maxSizes[mediaType] || maxSizes.image;
+        
+        if (image.size > maxSize) {
+            const maxSizeMB = Math.round(maxSize / (1024 * 1024));
+            return c.json({ error: `File too large. Max size: ${maxSizeMB}MB for ${mediaType} files` }, 400);
         }
 
         const imageId = `${nanoid()}.${image.name.split('.').pop()}`;

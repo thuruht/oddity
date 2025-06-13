@@ -1,9 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
-
 :root {
     --background: #000;
     --text-color: #e8e6e3;
     --primary-accent: #00ff41;
+    --secondary-accent: #ff9a00; /* New secondary accent color */
     --danger-accent: #ff4141;
     --border-color: #111;
     --component-bg: #111;
@@ -14,8 +13,8 @@ body, html {
     margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden;
     background-color: var(--background);
     color: var(--text-color);
-    font-family: 'VT323', monospace;
-    font-size: 19px;
+    font-family: 'VT323', 'Courier New', 'Monaco', 'Menlo', monospace;
+    font-size: clamp(16px, 2.5vw, 20px);
 }
 
 #map {
@@ -32,20 +31,96 @@ body, html {
 
 /* --- HEADER & TOAST --- */
 .intro-container {
-    position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1001;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 1001;
     background-color: var(--component-bg);
     color: var(--primary-accent);
-    padding: 5px 15px;
-    border: 1px solid var(--primary-accent);
+    padding: clamp(8px, 2vw, 15px) clamp(15px, 4vw, 25px);
+    border-bottom: 1px solid var(--primary-accent);
     text-align: center;
-    pointer-events: none;
-    box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+    min-height: clamp(50px, 12vw, 80px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
-.intro-container h1 { margin: 0; font-size: 2.2rem; }
-.intro-container p { margin: 0; }
 
-.toast-container { position: fixed; top: 20px; right: 20px; z-index: 3000; }
-.toast { background-color: var(--primary-accent); color: #000; padding: 15px; margin-bottom: 10px; opacity: 0; transition: opacity 0.5s; font-weight: bold; }
+.intro-container:hover {
+    background-color: var(--primary-accent);
+    color: var(--background);
+    box-shadow: 0 0 15px rgba(0, 255, 65, 0.5);
+}
+
+.intro-container:hover .help-icon {
+    background: var(--background);
+    color: var(--primary-accent);
+}
+
+.intro-container:hover h1,
+.intro-container:hover p {
+    color: var(--background) !important;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .intro-container {
+        padding: clamp(4px, 1.5vw, 8px) clamp(8px, 2.5vw, 12px);
+        min-height: clamp(40px, 8vw, 55px);
+    }
+    
+    .intro-container h1 {
+        font-size: clamp(14px, 3.5vw, 20px);
+        margin: 0;
+        line-height: 1.0;
+        gap: clamp(4px, 1vw, 8px);
+    }
+    
+    .intro-container p {
+        margin: 0;
+        font-size: clamp(9px, 2vw, 12px);
+        line-height: 1.0;
+    }
+    
+    .search-container {
+        top: 94px !important; /* FIXED position much lower on mobile (was 70px, now 94px) */
+        left: 10px;
+        right: 10px;
+        width: calc(100% - 20px);
+    }
+    
+    .help-icon {
+        width: clamp(12px, 3vw, 16px);
+        height: clamp(12px, 3vw, 16px);
+        font-size: clamp(7px, 1.5vw, 10px);
+    }
+}
+
+.intro-container h1 { 
+    margin: 0; 
+    font-size: clamp(20px, 4vw, 36px); 
+    line-height: 1.1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(8px, 2vw, 12px);
+    font-weight: normal;
+}
+.intro-container p { 
+    margin: clamp(2px, 0.5vw, 4px) 0 0 0; 
+    font-size: clamp(12px, 2.5vw, 20px); 
+    line-height: 1.2;
+    opacity: 0.9;
+}
+
+.toast-container { position: fixed; top: 104px; right: 20px; z-index: 3000; }
+.toast { background-color: var(--primary-accent); color: #000; padding: 15px; margin-bottom: 10px; opacity: 0; transition: opacity 0.5s; font-weight: bold; font-size: clamp(14px, 2.5vw, 18px); }
 .toast.show { opacity: 1; }
 
 /* --- UNIFIED MAP CONTROLS (ZOOM & CUSTOM) --- */
@@ -56,7 +131,7 @@ body, html {
 }
 .leaflet-bar a, .custom-controls-container button {
     width: 55px !important; height: 55px !important;
-    line-height: 55px !important; font-size: 2.5rem !important;
+    line-height: 55px !important; font-size: clamp(20px, 4vw, 30px) !important;
     text-align: center;
     background-color: var(--input-bg) !important;
     color: var(--primary-accent) !important;
@@ -76,13 +151,21 @@ body, html {
 
 /* Position the controls */
 .leaflet-top.leaflet-right { top: 50%; transform: translateY(-50%); }
-.custom-controls-container { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); z-index: 1000; display: flex; flex-direction: column; }
+.custom-controls-container { 
+    position: absolute; 
+    left: 10px; 
+    top: 50%; 
+    transform: translateY(-50%); 
+    z-index: 1000; 
+    display: flex; 
+    flex-direction: column; 
+}
 
 
 /* --- SEARCH BAR --- */
 .search-container { 
     position: absolute; 
-    top: 10px; 
+    top: clamp(99px, 16vw, 119px); /* Moved down 24px (was 75px, now 99px) */
     left: 10px; 
     z-index: 1000; 
     border: 1px solid var(--primary-accent); 
@@ -103,7 +186,7 @@ body, html {
     padding: 10px; 
     width: 250px; 
     font-family: inherit; 
-    font-size: 1.1em; 
+    font-size: clamp(16px, 3vw, 20px); 
     margin: 0;
 }
 #search-input:focus { outline: none; }
@@ -115,21 +198,44 @@ body, html {
     cursor: pointer; 
     font-weight: bold; 
     font-family: inherit; 
-    font-size: 1.1em; 
+    font-size: clamp(16px, 3vw, 20px); 
     margin: 0;
     height: auto;
 }
 #search-results { max-height: 200px; overflow-y: auto; }
-.search-result-item { padding: 10px; cursor: pointer; border-top: 1px solid var(--border-color); }
+.search-result-item { padding: 10px; cursor: pointer; border-top: 1px solid var(--border-color); font-size: clamp(14px, 2.5vw, 18px); }
 .search-result-item:hover { background: var(--primary-accent); color: #000; }
 
 /* --- MODALS & FORMS --- */
 .modal-container { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); justify-content: center; align-items: center; }
 .modal-content { background-color: var(--component-bg); padding: 25px; border: 1px solid var(--primary-accent); width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; position: relative; box-shadow: 0 0 15px rgba(0, 255, 65, 0.3); }
-.modal-close { position: absolute; top: 5px; right: 15px; font-size: 40px; font-weight: bold; cursor: pointer; background: none; border: none; color: #aaa; }
+.modal-close { 
+    position: absolute; 
+    top: 10px; 
+    right: 15px; 
+    font-size: clamp(24px, 5vw, 36px); 
+    font-weight: bold; 
+    cursor: pointer; 
+    background: var(--component-bg); 
+    border: 2px solid var(--primary-accent); 
+    color: var(--primary-accent); 
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    z-index: 2001;
+}
+.modal-close:hover { 
+    background: var(--primary-accent); 
+    color: var(--bg-color); 
+    transform: scale(1.1);
+}
 #modal-image { width: 100%; height: 250px; background-size: cover; background-position: center; margin-bottom: 15px; border: 1px solid var(--border-color); }
-#modal-body h3 { margin-top: 0; font-size: 2rem; color: var(--primary-accent); }
-#report-btn { background: none; border: 1px solid var(--danger-accent); color: var(--danger-accent); padding: 4px 10px; margin-top: 15px; font-size: 1em; cursor: pointer; }
+#modal-body h3 { margin-top: 0; font-size: clamp(24px, 5vw, 32px); color: var(--primary-accent); }
+#report-btn { background: none; border: 1px solid var(--danger-accent); color: var(--danger-accent); padding: 4px 10px; margin-top: 15px; font-size: clamp(14px, 2.5vw, 18px); cursor: pointer; }
 #report-btn:disabled { border-color: #444; color: #444; cursor: not-allowed; background: none; }
 #comments-section { margin-top: 20px; }
 #comments-list { min-height: 50px; max-height: 200px; overflow-y: auto; padding: 10px; border: 1px solid var(--border-color); margin-bottom: 10px; background: var(--input-bg); }
@@ -143,7 +249,7 @@ form input, form textarea {
     padding: 15px; 
     margin-bottom: 15px; 
     font-family: inherit; 
-    font-size: 1em; 
+    font-size: clamp(16px, 3vw, 20px); 
     border-radius: 0; 
     width: 100%;
     box-sizing: border-box;
@@ -157,7 +263,7 @@ form label {
     display: block;
     margin-bottom: 8px; 
     margin-top: 5px;
-    font-size: 1.1em; 
+    font-size: clamp(16px, 3vw, 20px); 
     text-transform: uppercase; 
     color: var(--primary-accent); 
 }
@@ -169,7 +275,7 @@ form button {
     padding: 15px; 
     font-weight: bold; 
     cursor: pointer; 
-    font-size: 1.2em; 
+    font-size: clamp(16px, 3.5vw, 22px); 
     text-transform: uppercase; 
     margin-top: 10px;
     display: block;
@@ -194,20 +300,41 @@ form input[type="file"]:hover {
 }
 
 /* --- MARKERS & POPUPS --- */
-.mapchan-marker { border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.9); box-shadow: 0 0 8px rgba(0, 0, 0, 0.8); animation: pulse 2s infinite ease-in-out; }
+.mapchan-marker { 
+    border-radius: 50%; 
+    border: 3px solid #fff; 
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.8); 
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    background-color: #00ff41; /* Default green */
+    z-index: 1000;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.marker-inner {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: inherit;
+}
 /* Marker color variants */
-.mapchan-marker.color-red { background-color: #ff4141; }
-.mapchan-marker.color-orange { background-color: #ff9a00; }
-.mapchan-marker.color-yellow { background-color: #f1c40f; }
-.mapchan-marker.color-green { background-color: #00ff41; }
-.mapchan-marker.color-cyan { background-color: #00bcd4; }
-.mapchan-marker.color-blue { background-color: #3498db; }
-.mapchan-marker.color-purple { background-color: #9b59b6; }
-.mapchan-marker.color-pink { background-color: #e91e63; }
-.mapchan-marker.color-white { background-color: #ffffff; }
+.mapchan-marker.color-red { background-color: #ff4141 !important; }
+.mapchan-marker.color-orange { background-color: #ff9a00 !important; }
+.mapchan-marker.color-yellow { background-color: #f1c40f !important; }
+.mapchan-marker.color-green { background-color: #00ff41 !important; }
+.mapchan-marker.color-cyan { background-color: #00bcd4 !important; }
+.mapchan-marker.color-blue { background-color: #3498db !important; }
+.mapchan-marker.color-purple { background-color: #9b59b6 !important; }
+.mapchan-marker.color-pink { background-color: #e91e63 !important; }
+.mapchan-marker.color-white { background-color: #ffffff !important; }
+.mapchan-marker.color-magenta { background-color: #ff00ff !important; }
+.mapchan-marker.color-lime { background-color: #32cd32 !important; }
+.mapchan-marker.color-teal { background-color: #008080 !important; }
+.mapchan-marker.color-navy { background-color: #000080 !important; }
 
 .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--component-bg) !important; color: var(--text-color) !important; border: 1px solid var(--primary-accent) !important; border-radius: 0 !important; box-shadow: 0 0 10px rgba(0, 255, 65, 0.3) !important; }
-.leaflet-popup-close-button { color: var(--text-color) !important; font-size: 24px !important; }
+.leaflet-popup-close-button { color: var(--text-color) !important; font-size: clamp(18px, 4vw, 28px) !important; }
 /* Loading spinner */
 #map-loading {
   position: fixed;
@@ -221,7 +348,7 @@ form input[type="file"]:hover {
   justify-content: center;
   align-items: center;
   z-index: 4000;
-  font-size: 1.5rem;
+  font-size: clamp(18px, 4vw, 24px);
   color: var(--primary-accent);
 }
 
@@ -240,13 +367,9 @@ form input[type="file"]:hover {
   100% { transform: rotate(360deg); }
 }
 
-/* Optimize marker animations */
-.mapchan-marker {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
 .mapchan-marker:hover {
   transform: scale(1.2);
-  box-shadow: 0 0 15px currentColor;
+  box-shadow: 0 0 15px rgba(0, 255, 65, 0.8);
 }
 /* Smooth transitions */
 .modal-container, .toast, button, input, textarea {
@@ -320,7 +443,7 @@ button:active {
     border: 1px solid var(--border-color) !important;
     box-shadow: 0 0 5px rgba(0, 255, 65, 0.2) !important;
     border-radius: 0 !important;
-    font-size: 11px !important;
+    font-size: clamp(10px, 2vw, 14px) !important;
     padding: 2px 5px !important;
 }
 
@@ -338,7 +461,7 @@ button:active {
     font-family: 'VT323', monospace !important;
 }
 
-/* Override any external flag symbols or emojis */
+/* Override any external flag symbols or emojis - enhanced */
 .leaflet-control-attribution img,
 .leaflet-control-attribution .emoji,
 .leaflet-control-attribution [data-emoji],
@@ -348,9 +471,702 @@ button:active {
     visibility: hidden !important;
 }
 
+/* Hide specific flag emojis if they somehow still appear */
+.leaflet-control-attribution *[title*="flag"],
+.leaflet-control-attribution *[alt*="flag"] {
+    display: none !important;
+}
+
 /* Clean text rendering */
 .leaflet-control-attribution {
     text-rendering: optimizeLegibility !important;
     -webkit-font-feature-settings: "liga" 0 !important;
     font-feature-settings: "liga" 0 !important;
+}
+
+/* Basic Leaflet marker support - simplified */
+.leaflet-marker-icon {
+    border: none;
+}
+
+/* Help icon and modal styling */
+#app-title {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#app-title:hover {
+    color: var(--primary-accent);
+    text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+}
+
+.help-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: clamp(20px, 4vw, 28px);
+    height: clamp(20px, 4vw, 28px);
+    background: var(--primary-accent);
+    color: var(--background);
+    border-radius: 50%;
+    font-size: clamp(12px, 3vw, 18px);
+    font-weight: bold;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.help-icon:hover {
+    background: #fff;
+    color: var(--background);
+    transform: scale(1.2);
+    box-shadow: 0 0 15px rgba(0, 255, 65, 0.8);
+}
+
+.help-modal-content {
+    max-width: 600px;
+    height: 80vh;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Help Modal Tabs */
+.help-tabs {
+    display: flex;
+    border-bottom: 2px solid var(--border-color);
+    margin-bottom: 20px;
+}
+
+.help-tab-button {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 12px 20px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s ease;
+    flex: 1;
+    text-align: center;
+}
+
+.help-tab-button:hover {
+    color: var(--text-primary);
+    background-color: rgba(0, 255, 65, 0.1);
+}
+
+.help-tab-button.active {
+    color: var(--primary-accent);
+    border-bottom-color: var(--primary-accent);
+    background-color: rgba(0, 255, 65, 0.1);
+}
+
+.help-tab-content {
+    display: none;
+    animation: fadeIn 0.3s ease;
+    flex: 1;
+    overflow-y: auto;
+    height: 100%;
+}
+
+.help-tab-content.active {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Ensure both help content and attribution content fill available space */
+.help-content,
+.attribution-content {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+.attribution-content h4 {
+    color: var(--primary-accent);
+    margin-top: 20px;
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+.attribution-content ul {
+    margin-bottom: 15px;
+}
+
+.attribution-content li {
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.attribution-content a {
+    color: var(--secondary-accent);
+    text-decoration: none;
+    border-bottom: 1px dotted var(--secondary-accent);
+    transition: color 0.2s ease;
+}
+
+.attribution-content a:hover {
+    color: var(--primary-accent);
+    border-bottom-color: var(--primary-accent);
+}
+
+.attribution-footer {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+}
+
+/* Custom scrollbar for attribution content */
+.attribution-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attribution-content::-webkit-scrollbar-track {
+    background: var(--bg-color);
+    border-radius: 3px;
+}
+
+.attribution-content::-webkit-scrollbar-thumb {
+    background: var(--primary-accent);
+    border-radius: 3px;
+    opacity: 0.7;
+}
+
+.attribution-content::-webkit-scrollbar-thumb:hover {
+    opacity: 1;
+}
+
+/* Custom scrollbar for help content */
+.help-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.help-content::-webkit-scrollbar-track {
+    background: var(--bg-color);
+    border-radius: 3px;
+}
+
+.help-content::-webkit-scrollbar-thumb {
+    background: var(--primary-accent);
+    border-radius: 3px;
+    opacity: 0.7;
+}
+
+.help-content::-webkit-scrollbar-thumb:hover {
+    opacity: 1;
+}
+
+/* Mobile modal adjustments */
+@media (max-width: 768px) {
+    .help-modal-content {
+        max-width: 95vw;
+        max-height: 85vh;
+        margin: 10px;
+        font-size: clamp(14px, 3vw, 18px);
+    }
+    
+    .help-content h3 {
+        font-size: clamp(16px, 4vw, 22px);
+        margin-top: 1rem;
+    }
+    
+    .help-content ul {
+        padding-left: 1rem;
+    }
+}
+
+/* Mobile modal responsiveness for ALL modals */
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95vw;
+        max-width: none;
+        max-height: 85vh;
+        padding: 15px;
+        margin: 10px;
+        font-size: clamp(14px, 3vw, 18px);
+    }
+    
+    .modal-close {
+        font-size: clamp(20px, 4vw, 28px);
+        width: 35px;
+        height: 35px;
+        top: 5px;
+        right: 10px;
+    }
+    
+    /* Add modal form adjustments */
+    .modal-content h3,
+    .modal-content h2 {
+        font-size: clamp(18px, 4vw, 24px);
+        margin-bottom: 10px;
+    }
+    
+    .modal-content input,
+    .modal-content textarea {
+        font-size: clamp(16px, 3vw, 20px); /* Prevents zoom on iOS */
+        padding: 8px;
+    }
+    
+    .modal-content button {
+        padding: 10px 15px;
+        font-size: clamp(14px, 3vw, 18px);
+        margin: 5px 0;
+    }
+    
+    /* View modal specific */
+    #modal-body {
+        padding: 10px 0;
+    }
+    
+    #modal-image {
+        height: 200px; /* Smaller image on mobile */
+    }
+    
+    /* Add modal specific */
+    #add-modal .modal-content {
+        max-height: 80vh;
+    }
+    
+    /* Comments section */
+    #comments-section {
+        margin-top: 15px;
+    }
+    
+    #comment-input {
+        min-height: 60px;
+    }
+}
+
+.help-content h3 {
+    color: var(--primary-accent);
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid var(--primary-accent);
+    padding-bottom: 0.25rem;
+    font-size: clamp(18px, 4vw, 24px);
+}
+
+.help-content ul {
+    padding-left: 1.5rem;
+    margin: 0.5rem 0;
+}
+
+.help-content li {
+    margin: 0.5rem 0;
+    line-height: 1.4;
+    font-size: clamp(14px, 3vw, 18px);
+}
+
+.help-content strong {
+    color: var(--primary-accent);
+}
+
+.help-footer {
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--component-bg);
+}
+
+.help-footer em {
+    color: var(--primary-accent);
+    font-size: clamp(16px, 3.5vw, 22px);
+}
+
+/* Media player styles */
+#modal-image video,
+#modal-image audio {
+    border-radius: 4px;
+    background: var(--component-bg);
+}
+
+#modal-image video::-webkit-media-controls-panel,
+#modal-image audio::-webkit-media-controls-panel {
+    background-color: var(--component-bg);
+}
+
+#modal-image video::-webkit-media-controls-play-button,
+#modal-image audio::-webkit-media-controls-play-button {
+    background-color: var(--primary-accent);
+    border-radius: 50%;
+}
+
+/* Audio visualization background */
+.audio-container {
+    background: linear-gradient(45deg, #111 25%, transparent 25%), 
+                linear-gradient(-45deg, #111 25%, transparent 25%), 
+                linear-gradient(45deg, transparent 75%, #111 75%), 
+                linear-gradient(-45deg, transparent 75%, #111 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+}
+
+/* Mobile media adjustments */
+@media (max-width: 768px) {
+    #modal-image video,
+    #modal-image audio {
+        height: 150px !important;
+    }
+    
+    #modal-image audio {
+        width: 95% !important;
+    }
+}
+
+/* Layer control styling */
+.leaflet-control-layers {
+    background-color: var(--component-bg) !important;
+    border: 1px solid var(--primary-accent) !important;
+    border-radius: 0 !important;
+    box-shadow: 0 0 10px rgba(0, 255, 65, 0.3) !important;
+    max-height: 65vh !important; /* Reduced for many layers */
+    overflow-y: auto !important; /* Add scrolling */
+}
+
+.leaflet-control-layers-toggle {
+    background-color: var(--component-bg) !important;
+    color: var(--primary-accent) !important;
+    width: 55px !important;
+    height: 55px !important;
+    background-image: none !important;
+    font-size: clamp(20px, 4vw, 28px) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.leaflet-control-layers-toggle::before {
+    content: "⚏" !important;
+    color: var(--primary-accent) !important;
+}
+
+.leaflet-control-layers-expanded {
+    padding: 10px !important;
+    color: var(--text-color) !important;
+    background-color: var(--component-bg) !important;
+    min-width: 240px !important; /* Even wider for longer layer names */
+    max-width: 300px !important; /* Prevent too wide on desktop */
+}
+
+.leaflet-control-layers-base label {
+    color: var(--text-color) !important;
+    font-family: inherit !important;
+    font-size: clamp(12px, 2.5vw, 16px) !important;
+    margin-bottom: 5px !important;
+    display: block !important;
+    cursor: pointer !important;
+    transition: color 0.2s ease !important;
+    padding: 2px 4px !important;
+    border-radius: 2px !important;
+    line-height: 1.3 !important;
+}
+
+.leaflet-control-layers-base label:hover {
+    color: var(--primary-accent) !important;
+    background-color: rgba(0, 255, 65, 0.1) !important;
+}
+
+.leaflet-control-layers-base input[type="radio"] {
+    margin-right: 8px !important;
+    accent-color: var(--primary-accent) !important;
+}
+
+/* Overlay layers styling (checkboxes) */
+.leaflet-control-layers-overlays {
+    background-color: rgba(255, 165, 0, 0.05) !important;
+    border-radius: 6px !important;
+    padding: 10px !important;
+    margin-bottom: 15px !important;
+    border: 1px solid rgba(255, 165, 0, 0.2) !important;
+}
+
+.leaflet-control-layers-overlays label {
+    border-top: none !important;
+    padding-top: 4px !important;
+    margin-top: 4px !important;
+}
+
+.leaflet-control-layers-overlays label:first-child {
+    border-top: none !important;
+    margin-top: 0px !important;
+}
+
+.leaflet-control-layers-overlays input[type="checkbox"] {
+    margin-right: 8px !important;
+    accent-color: var(--secondary-accent) !important;
+    width: 16px !important;
+    height: 16px !important;
+}
+
+.leaflet-control-layers-overlays label:hover {
+    color: var(--secondary-accent) !important;
+    background-color: rgba(255, 165, 0, 0.1) !important;
+}
+
+/* Move overlays to the top of the layer control */
+.leaflet-control-layers-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.leaflet-control-layers-overlays {
+    order: -1; /* Move overlays before base layers */
+    margin-bottom: 15px !important;
+    padding-bottom: 15px !important;
+    border-bottom: 2px solid var(--border-color) !important;
+}
+
+.leaflet-control-layers-base {
+    order: 1; /* Keep base layers after overlays */
+}
+
+/* Add labels for better organization */
+.leaflet-control-layers-overlays::before {
+    content: "📍 Overlays (check to add)";
+    display: block;
+    font-weight: bold;
+    color: var(--secondary-accent);
+    margin-bottom: 10px;
+    font-size: 14px;
+    text-align: center;
+}
+
+.leaflet-control-layers-base::before {
+    content: "🗺️ Base Maps (select one)";
+    display: block;
+    font-weight: bold;
+    color: var(--primary-accent);
+    margin-bottom: 10px;
+    font-size: 14px;
+    text-align: center;
+}
+
+/* Position layer control */
+.leaflet-top.leaflet-left {
+    top: clamp(110px, 20vw, 130px) !important;
+    left: 10px !important;
+}
+
+/* Mobile adjustments for layer control */
+@media (max-width: 768px) {
+    .leaflet-control-layers-toggle {
+        width: 45px !important;
+        height: 45px !important;
+        font-size: clamp(16px, 3.5vw, 22px) !important;
+    }
+    
+    .leaflet-control-layers-expanded {
+        padding: 8px !important;
+        max-height: 60vh !important;
+        overflow-y: auto !important;
+    }
+    
+    .leaflet-control-layers-base label {
+        font-size: clamp(11px, 2.2vw, 14px) !important;
+        margin-bottom: 3px !important;
+    }
+}
+
+/* Custom scrollbar for layer control */
+.leaflet-control-layers::-webkit-scrollbar {
+    width: 6px;
+}
+
+.leaflet-control-layers::-webkit-scrollbar-track {
+    background: var(--bg-color);
+    border-radius: 3px;
+}
+
+.leaflet-control-layers::-webkit-scrollbar-thumb {
+    background: var(--primary-accent);
+    border-radius: 3px;
+    opacity: 0.7;
+}
+
+.leaflet-control-layers::-webkit-scrollbar-thumb:hover {
+    opacity: 1;
+}
+
+/* Hide default map attribution since we have it in the modal */
+.leaflet-control-attribution {
+    display: none !important;
+}
+
+/* Layer Dropdown Control */
+.layer-dropdown-container {
+    position: fixed;
+    top: clamp(145px, 25vw, 170px); /* Moved lower to avoid search overlap */
+    left: 50%;
+    transform: translateX(-50%); /* Center the dropdown */
+    z-index: 1001;
+    width: clamp(280px, 60vw, 400px); /* Responsive centered width */
+}
+
+.layer-dropdown-btn {
+    width: 100%;
+    background: var(--component-bg);
+    border: 1px solid var(--primary-accent);
+    color: var(--text-color);
+    padding: 10px 15px;
+    font-size: clamp(14px, 3vw, 16px);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 0;
+    transition: all 0.2s ease;
+    box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+}
+
+.layer-dropdown-btn:hover {
+    background: var(--bg-tertiary);
+    box-shadow: 0 0 15px rgba(0, 255, 65, 0.5);
+}
+
+.layer-dropdown-btn.active {
+    border-bottom: none;
+    box-shadow: 0 0 15px rgba(0, 255, 65, 0.5);
+}
+
+.dropdown-arrow {
+    font-size: 12px;
+    transition: transform 0.2s ease;
+}
+
+.layer-dropdown-btn.active .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+.layer-dropdown-menu {
+    display: none;
+    background: var(--component-bg);
+    border: 1px solid var(--primary-accent);
+    border-top: none;
+    max-height: 60vh;
+    overflow-y: auto;
+    box-shadow: 0 5px 15px rgba(0, 255, 65, 0.3);
+}
+
+.layer-dropdown-menu.active {
+    display: block;
+    animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.layer-section {
+    padding: 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.layer-section:last-child {
+    border-bottom: none;
+}
+
+.layer-section h4 {
+    color: var(--primary-accent);
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    text-align: center;
+}
+
+.layer-section:first-child h4 {
+    color: var(--secondary-accent);
+}
+
+.layer-option {
+    display: flex;
+    align-items: center;
+    padding: 6px 0;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    border-radius: 3px;
+    padding-left: 8px;
+}
+
+.layer-option:hover {
+    background-color: rgba(0, 255, 65, 0.1);
+}
+
+.layer-option input[type="radio"],
+.layer-option input[type="checkbox"] {
+    margin-right: 10px;
+    accent-color: var(--primary-accent);
+}
+
+.layer-option input[type="checkbox"] {
+    accent-color: var(--secondary-accent);
+}
+
+.layer-option label {
+    color: var(--text-color);
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1.3;
+}
+
+/* Custom scrollbar for layer dropdown */
+.layer-dropdown-menu::-webkit-scrollbar {
+    width: 6px;
+}
+
+.layer-dropdown-menu::-webkit-scrollbar-track {
+    background: var(--bg-color);
+    border-radius: 3px;
+}
+
+.layer-dropdown-menu::-webkit-scrollbar-thumb {
+    background: var(--primary-accent);
+    border-radius: 3px;
+    opacity: 0.7;
+}
+
+.layer-dropdown-menu::-webkit-scrollbar-thumb:hover {
+    opacity: 1;
+}
+
+/* Hide the default Leaflet layer control */
+.leaflet-control-layers {
+    display: none !important;
+}
+
+/* Mobile adjustments for layer dropdown */
+@media (max-width: 768px) {
+    .layer-dropdown-container {
+        width: clamp(260px, 80vw, 350px);
+        top: clamp(130px, 23vw, 155px); /* Adjusted for mobile */
+    }
+    
+    .layer-dropdown-btn {
+        padding: 8px 12px;
+        font-size: clamp(13px, 2.8vw, 15px);
+    }
+    
+    .layer-section {
+        padding: 12px;
+    }
+    
+    .layer-option {
+        padding: 4px 0 4px 6px;
+    }
+    
+    .layer-option label {
+        font-size: 13px;
+    }
 }
