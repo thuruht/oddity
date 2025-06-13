@@ -24,13 +24,6 @@
     
     <div id="map"></div>
     <div class="toast-container"></div>
-    <div class="search-container">
-        <form id="search-form">
-            <input type="text" id="search-input" placeholder="Find a place..." autocomplete="off">
-            <button type="submit">GO</button>
-        </form>
-        <div id="search-results"></div>
-    </div>
     
     <!-- Layer Control Dropdown -->
     <div class="layer-dropdown-container">
@@ -47,6 +40,14 @@
                 <div id="base-layer-controls"></div>
             </div>
         </div>
+    </div>
+    
+    <div class="search-container">
+        <form id="search-form">
+            <input type="text" id="search-input" placeholder="Find a place..." autocomplete="off">
+            <button type="submit">GO</button>
+        </form>
+        <div id="search-results"></div>
     </div>
     
     <div class="custom-controls-container">
@@ -140,7 +141,7 @@
             <div id="features-tab" class="help-tab-content">
                 <div class="help-content">
                     <h3>🗺️ Layer Control</h3>
-                    <p>Click the <strong>🗺️ Default ▼</strong> dropdown under the search bar to access:</p>
+                    <p>Click the <strong>🗺️ Default ▼</strong> dropdown above the search bar to access:</p>
                     <ul>
                         <li><strong>📍 Overlays:</strong> Check boxes to add transport data (railways, cycling routes, etc.)</li>
                         <li><strong>🗺️ Base Maps:</strong> Choose from 20+ international map styles</li>
