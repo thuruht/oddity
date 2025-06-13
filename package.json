@@ -1,0 +1,19 @@
+{
+  "name": "odd-mapchan",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "db:migrate": "wrangler d1 migrations apply odd-db --remote"
+  },
+  "dependencies": {
+    "hono": "^4.4.7",
+    "drizzle-orm": "^0.31.2",
+    "nanoid": "^5.0.7"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240620.0",
+    "wrangler": "^3.62.0",
+    "typescript": "^5.4.5"
+  }
+}

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O.D.D.MapChan</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div id="map"></div>
+    <div class="toast-container"></div>
+    <div class="search-container">
+        <form id="search-form">
+            <input type="text" id="search-input" placeholder="Find a place..." autocomplete="off">
+            <button type="submit">GO</button>
+        </form>
+        <div id="search-results"></div>
+    </div>
+    <div class="custom-controls-container">
+        <button id="reset-zoom-btn" title="Reset View">&#x2302;</button>
+        <button id="locate-user-btn" title="Find My Location">&#x25CE;</button>
+    </div>
+    <div class="intro-container">
+        <h1>O.D.D.MapChan</h1>
+        <p>Obscure Destination Depository</p>
+    </div>
+<div id="view-modal" class="modal-container" aria-hidden="true" aria-labelledby="modal-title" role="dialog">
+  <div class="modal-content">
+    <button class="modal-close" aria-label="Close modal">&times;</button>
+            <div id="modal-image"></div>
+            <div id="modal-body">
+                <h3 id="modal-title"></h3>
+                <p id="modal-description"></p>
+                <small id="modal-handle"></small>
+                <button id="report-btn">Report Post</button>
+            </div>
+            <hr/>
+            <div id="comments-section">
+                <h4>Discussion</h4>
+                <div id="comments-list"></div>
+                <form id="comment-form">
+                    <textarea id="comment-input" placeholder="Post a reply..." required></textarea>
+                    <button type="submit">Reply</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div id="add-modal" class="modal-container">
+        <div class="modal-content">
+            <button class="modal-close">&times;</button>
+            <h3>Drop a Pin</h3>
+            <form id="location-form">
+                <input type="hidden" id="latitude" name="latitude">
+                <input type="hidden" id="longitude" name="longitude">
+                <input type="text" id="name" name="name" placeholder="Title" required>
+                <textarea id="description" name="description" placeholder="Description..." required></textarea>
+                <label for="image-upload">Upload Image (Required):</label>
+                <input type="file" id="image-upload" name="image" accept="image/png, image/jpeg, image/gif, image/webp" required>
+                <button type="submit">Post Anonymously</button>
+            </form>
+        </div>
+    </div>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="/script.js"></script>
+</body>
+</html>
