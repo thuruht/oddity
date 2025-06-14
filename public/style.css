@@ -89,7 +89,7 @@ body, html {
     }
     
     .search-container {
-        top: 94px !important; /* FIXED position much lower on mobile (was 70px, now 94px) */
+        top: 85px !important; /* FIXED position moved down 5px on mobile (was 80px, now 85px) */
         left: 10px;
         right: 10px;
         width: calc(100% - 20px);
@@ -165,7 +165,7 @@ body, html {
 /* --- SEARCH BAR --- */
 .search-container { 
     position: absolute; 
-    top: clamp(99px, 16vw, 119px); /* Moved down 24px (was 75px, now 99px) */
+    top: clamp(90px, 14vw, 110px); /* Moved down 5px (was 85px, now 90px) */
     left: 10px; 
     z-index: 1000; 
     border: 1px solid var(--primary-accent); 
@@ -1002,7 +1002,7 @@ button:active {
 /* Layer Dropdown Control */
 .layer-dropdown-container {
     position: fixed;
-    top: clamp(145px, 25vw, 170px); /* Moved lower to avoid search overlap */
+    top: clamp(170px, 28vw, 195px); /* Moved up 5px (was 175px, now 170px) */
     left: 50%;
     transform: translateX(-50%); /* Center the dropdown */
     z-index: 1001;
@@ -1150,7 +1150,7 @@ button:active {
 @media (max-width: 768px) {
     .layer-dropdown-container {
         width: clamp(260px, 80vw, 350px);
-        top: clamp(130px, 23vw, 155px); /* Adjusted for mobile */
+        top: clamp(155px, 26vw, 180px); /* Moved up 5px on mobile (was 160px, now 155px) */
     }
     
     .layer-dropdown-btn {
