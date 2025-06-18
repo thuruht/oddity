@@ -4,16 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>O.D.D.MapChan</title>
+    <meta name="description" content="O.D.D.MapChan (Obscure Destination Depository) is a community-driven map to discover and share unique, interesting, or unusual places around the world.">
+    <meta name="keywords" content="obscure, destinations, map, oddities, travel, interesting places, urban exploration, urbex, hidden gems, anonymous map">
     
-    <!-- fonts first -->
-    <link rel="stylesheet" href="https://fonts.bunny.net/css2?family=VT323&display=swap">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
     
-    <!-- Load other resources -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="/style.css?v=header-final">
+    <link rel="stylesheet" href="/style.css?v=fleeting-journey-dark">
 </head>
 <body>
-    <!-- Header - fixed at top, full width -->
     <div class="intro-container" id="app-title" title="Click for help and information about O.D.D.MapChan">
         <h1>
             O.D.D.MapChan 
@@ -25,7 +26,6 @@
     <div id="map"></div>
     <div class="toast-container"></div>
     
-    <!-- Layer Control Dropdown -->
     <div class="layer-dropdown-container">
         <button id="layer-dropdown-btn" class="layer-dropdown-btn">
             🗺️ <span id="current-layer-name">Default</span> <span class="dropdown-arrow">▼</span>
@@ -92,13 +92,11 @@
         </div>
     </div>
 
-    <!-- Help Modal -->
     <div id="help-modal" class="modal-container" aria-hidden="true" role="dialog">
         <div class="modal-content help-modal-content">
             <button class="modal-close" aria-label="Close help">&times;</button>
             <h2>📍 Welcome to O.D.D.MapChan!</h2>
             
-            <!-- Tab Navigation -->
             <div class="help-tabs">
                 <button class="help-tab-button active" data-tab="help">Quick Start</button>
                 <button class="help-tab-button" data-tab="features">Navigation</button>
@@ -106,7 +104,6 @@
                 <button class="help-tab-button" data-tab="attribution">Credits</button>
             </div>
             
-            <!-- Quick Start Tab Content -->
             <div id="help-tab" class="help-tab-content active">
                 <div class="help-content">
                     <h3>🗺️ What is O.D.D.MapChan?</h3>
@@ -137,7 +134,6 @@
                 </div>
             </div>
             
-            <!-- Features & Tips Tab Content -->
             <div id="features-tab" class="help-tab-content">
                 <div class="help-content">
                     <h3>🗺️ Layer Control</h3>
@@ -173,7 +169,6 @@
                 </div>
             </div>
             
-            <!-- Media Guide Tab Content -->
             <div id="media-tab" class="help-tab-content">
                 <div class="help-content">
                     <h3>📸 Supported Media Types</h3>
@@ -221,7 +216,6 @@
                 </div>
             </div>
             
-            <!-- Attribution Tab Content -->
             <div id="attribution-tab" class="help-tab-content">
                 <div class="attribution-content">
                     <h3>🗺️ Map Data & Tiles</h3>
@@ -271,6 +265,6 @@
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
-    <script src="/script.js?v=help" defer></script>
+    <script src="/script.js?v=final-fixes" defer></script>
 </body>
 </html>

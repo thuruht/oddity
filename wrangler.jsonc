@@ -1,3 +1,4 @@
+// wrangler.jsonc
 {
   "name": "odd-mapchan",
   "main": "src/index.ts",
@@ -5,9 +6,16 @@
   "compatibility_flags": [
     "nodejs_compat"
   ],
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  },
   "assets": {
     "binding": "ASSETS",
     "directory": "./public"
+  },
+  "vars": {
+    "R2_PUBLIC_URL": "https://odd-img.distorted.work"
   },
   "d1_databases": [
     {
@@ -21,8 +29,5 @@
       "binding": "R2_BUCKET",
       "bucket_name": "odd-media"
     }
-  ],
-  "vars": {
-    "R2_PUBLIC_URL": "https://odd-img.distorted.work"
-  }
+  ]
 }
