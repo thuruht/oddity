@@ -27,6 +27,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (document.body.contains(mapLoading)) {
             document.body.removeChild(mapLoading);
         }
+        // Set initial display name for current layer
+        document.getElementById('current-layer-name').textContent = 'Night Earth';
     });
 
     const addModal = document.getElementById('add-modal');
@@ -37,6 +39,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchResultsContainer = document.getElementById('search-results');
     const resetZoomBtn = document.getElementById('reset-zoom-btn');
     const locateUserBtn = document.getElementById('locate-user-btn');
+    const refreshBtn = document.createElement('button');
+    refreshBtn.id = 'refresh-map-btn';
+    refreshBtn.title = 'Refresh Map Data';
+    refreshBtn.innerHTML = '↻';
+    document.querySelector('.custom-controls-container').appendChild(refreshBtn);
     let tempMarker = null;
     let userLocationMarker = null;
     let activeLocationId = null;
@@ -64,8 +71,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Define tile layers
     const tileLayers = {
-        // New default map
-        'Default': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+        // Night Earth as default map
+        'Night Earth': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
             attribution: '&copy; <a href="https://www.esri.com/">Esri</a> Dark Gray Canvas',
         }),
         // Previous default, now an option
@@ -184,8 +191,8 @@ document.addEventListener('DOMContentLoaded', () => {
         })
     };
     
-    // Add default layer (now 'Night Earth', keyed as 'Default')
-    tileLayers['Default'].addTo(map);
+    // Add default layer (now 'Night Earth')
+    tileLayers['Night Earth'].addTo(map);
     
     // Create custom layer dropdown instead of default Leaflet control
     createCustomLayerControl(tileLayers, overlayLayers, map);
@@ -244,9 +251,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const addMarkerToMap = (location) => {
         const lat = parseFloat(location.latitude);
         const lng = parseFloat(location.longitude);
+        
+        // Validate coordinates
         if (isNaN(lat) || isNaN(lng) || (lat === 0 && lng === 0)) {
             console.error('Invalid coordinates for marker:', location);
-            return;
+            return null; // Return null to indicate failure
+        }
+        
+        // Check if this location is already on the map
+        if (location.id && displayedLocationIds.has(location.id)) {
+            console.log(`Location ${location.id} already on map, skipping`);
+            return null;
         }
         
         const getColorFromTime = (createdAt) => {
@@ -263,6 +278,22 @@ document.addEventListener('DOMContentLoaded', () => {
         
         marker.addTo(map);
         marker.on('click', () => openViewModal(location));
+        
+        // Add a subtle pulse animation for new markers
+        const markerElement = marker.getElement();
+        if (markerElement) {
+            markerElement.classList.add('marker-pulse');
+            setTimeout(() => {
+                markerElement.classList.remove('marker-pulse');
+            }, 3000);
+        }
+        
+        // Track this location as displayed
+        if (location.id) {
+            displayedLocationIds.add(location.id);
+        }
+        
+        return marker; // Return the marker for potential future use
     };
 
     const openViewModal = async (location) => {
@@ -339,13 +370,37 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const formData = new FormData(locationForm);
             const response = await fetch('/api/locations', { method: 'POST', body: formData });
-            if (!response.ok) { const err = await response.json(); throw new Error(err.error || 'Post failed.'); }
+            if (!response.ok) { 
+                const err = await response.json(); 
+                throw new Error(err.error || 'Post failed.'); 
+            }
             const newLocation = await response.json();
-            addMarkerToMap(newLocation);
+            
+            // Add the new marker to the map and fly to it
+            const marker = addMarkerToMap(newLocation);
+            
+            if (marker) {
+                map.flyTo([parseFloat(newLocation.latitude), parseFloat(newLocation.longitude)], 14);
+                showToast('Pin posted successfully!', 'success');
+                
+                // Verify that the location was added to our tracking Set
+                if (newLocation.id && !displayedLocationIds.has(newLocation.id)) {
+                    console.warn('New location was not properly tracked, adding manually');
+                    displayedLocationIds.add(newLocation.id);
+                }
+            } else {
+                console.error('Failed to add marker for new location:', newLocation);
+                showToast('Location added but not displayed properly. Try refreshing.', 'error');
+                
+                // Force a refresh of locations from the server
+                loadLocations();
+            }
+            
+            // Clear the form and close the modal
             closeModal();
-            showToast('Pin posted.', 'success');
         } catch (error) {
-            showToast(error.message, 'error');
+            console.error('Error posting location:', error);
+            showToast(error.message || 'Failed to post location', 'error');
         } finally {
             submitButton.disabled = false;
             submitButton.textContent = 'Post Anonymously';
@@ -445,17 +500,77 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         );
     });
+    
+    refreshBtn.addEventListener('click', () => {
+        triggerHaptic();
+        refreshBtn.textContent = '...';
+        
+        // Create a verification function to check if any locations are missing from the map
+        const verifyLocations = async () => {
+            try {
+                const response = await fetch('/api/locations');
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const remoteLocations = await response.json();
+                if (!Array.isArray(remoteLocations)) throw new Error('API response is not an array.');
+                
+                // Find missing locations
+                const missingLocations = remoteLocations.filter(loc => !displayedLocationIds.has(loc.id));
+                
+                if (missingLocations.length > 0) {
+                    console.log(`Found ${missingLocations.length} missing locations, adding to map`);
+                    missingLocations.forEach(loc => addMarkerToMap(loc));
+                    showToast(`Added ${missingLocations.length} missing locations to the map.`, 'success');
+                } else {
+                    console.log('No missing locations found, map is up to date');
+                    showToast('Map is up to date!', 'success');
+                }
+                
+                // Display verification stats
+                console.log(`Map verification: ${displayedLocationIds.size} local vs ${remoteLocations.length} remote locations`);
+            } catch (error) {
+                console.error('Error verifying locations:', error);
+                showToast('Failed to verify map locations.', 'error');
+            } finally {
+                refreshBtn.textContent = '↻';
+            }
+        };
+        
+        // Run verification
+        verifyLocations();
+    });
 
-    fetch('/api/locations')
-        .then(res => res.ok ? res.json() : Promise.reject(new Error(`HTTP ${res.status}`)))
-        .then(locations => {
-            if (!Array.isArray(locations)) throw new Error('API response is not an array.');
-            locations.forEach(addMarkerToMap);
-        })
-        .catch(error => {
-            console.error('Error loading locations:', error);
-            showToast('Failed to load map locations', 'error');
-        });
+    // Keep track of displayed locations by ID
+    const displayedLocationIds = new Set();
+    
+    // Initial load of locations
+    const loadLocations = () => {
+        fetch('/api/locations')
+            .then(res => res.ok ? res.json() : Promise.reject(new Error(`HTTP ${res.status}`)))
+            .then(locations => {
+                if (!Array.isArray(locations)) throw new Error('API response is not an array.');
+                
+                // Add markers for locations not already on the map
+                locations.forEach(location => {
+                    if (!displayedLocationIds.has(location.id)) {
+                        addMarkerToMap(location);
+                        displayedLocationIds.add(location.id);
+                    }
+                });
+                
+                console.log(`Map showing ${displayedLocationIds.size} locations`);
+            })
+            .catch(error => {
+                console.error('Error loading locations:', error);
+                showToast('Failed to load map locations', 'error');
+            });
+    };
+    
+    // Initial load
+    loadLocations();
+    
+    // Periodically check for new locations (every 60 seconds)
+    const locationCheckInterval = setInterval(loadLocations, 60000);
     
     function createCustomLayerControl(baseLayers, overlays, map) {
         const dropdownBtn = document.getElementById('layer-dropdown-btn');
@@ -463,7 +578,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const overlayControls = document.getElementById('overlay-controls');
         const baseLayerControls = document.getElementById('base-layer-controls');
         const currentLayerName = document.getElementById('current-layer-name');
-        let currentBaseLayer = 'Default';
+        let currentBaseLayer = 'Night Earth';
 
         Object.entries(overlays).forEach(([name, layer]) => {
             const option = document.createElement('div');
@@ -567,4 +682,9 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     initializeHelpModal();
+    
+    // Clean up intervals when the page is unloaded
+    window.addEventListener('beforeunload', () => {
+        clearInterval(locationCheckInterval);
+    });
 });

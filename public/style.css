@@ -436,6 +436,10 @@ button:active {
   100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(0, 255, 65, 0); }
 }
 
+.marker-pulse {
+  animation: pulse 1.5s infinite;
+}
+
 /* Custom Leaflet attribution styling */
 .leaflet-control-attribution {
     background-color: var(--component-bg) !important;
