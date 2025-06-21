@@ -17,10 +17,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const L = window.L;
     // Initialize map with mobile-responsive default view
     const isMobile = window.innerWidth <= 768;
-    const defaultZoom = isMobile ? 1 : 3;
+    const defaultZoom = isMobile ? 2 : 3; // Increased minimum zoom for mobile
     const defaultCenter = isMobile ? [20, 0] : [20, 0];
     
-    const map = L.map('map', { zoomControl: false }).setView(defaultCenter, defaultZoom);
+    // Create map with noWrap option to prevent multiple Earths when zooming out
+    const map = L.map('map', { 
+        zoomControl: false,
+        worldCopyJump: true,  // Seamlessly jump when panning across the date line
+        maxBounds: [[-90, -180], [90, 180]],  // Restrict view to one world
+        maxBoundsViscosity: 1.0,  // How "solid" the bounds are (1 = can't escape bounds)
+        minZoom: 2  // Prevent zooming out too far
+    }).setView(defaultCenter, defaultZoom);
+    
     L.control.zoom({ position: 'topright' }).addTo(map);
 
     map.whenReady(() => {
@@ -33,6 +41,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const addModal = document.getElementById('add-modal');
     const viewModal = document.getElementById('view-modal');
+    
+    // Ensure modals are properly initialized
+    if (!addModal || !viewModal) {
+        console.error('Modal elements not found in the DOM!');
+        alert('Error: Modal elements missing. Please refresh the page.');
+    } else {
+        console.log('Modals initialized successfully');
+        // Force modals to initialize with correct display property
+        addModal.style.display = 'none';
+        viewModal.style.display = 'none';
+    }
+    
     const locationForm = document.getElementById('location-form');
     const commentForm = document.getElementById('comment-form');
     const searchForm = document.getElementById('search-form');
@@ -47,6 +67,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let tempMarker = null;
     let userLocationMarker = null;
     let activeLocationId = null;
+    
+    // Track all markers by location ID for position normalization
+    const allMarkers = new Map();
 
     const MARKER_COLORS = ['red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'purple', 'pink', 'magenta', 'lime', 'teal', 'navy'];
     
@@ -69,15 +92,24 @@ document.addEventListener('DOMContentLoaded', () => {
         return colors[colorName] || '#ff0000';
     };
 
+    // Define shared tile layer options to prevent wrapping
+    const tileLayerOptions = {
+        noWrap: true,  // Prevent tiles from wrapping around the antimeridian
+        bounds: [[-90, -180], [90, 180]],  // Restrict tiles to one world
+        minZoom: 2  // Minimum zoom level
+    };
+    
     // Define tile layers
     const tileLayers = {
         // Night Earth as default map
         'Night Earth': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
             attribution: '&copy; <a href="https://www.esri.com/">Esri</a> Dark Gray Canvas',
+            ...tileLayerOptions
         }),
         // Previous default, now an option
         'Carto Dark': L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> | &copy; <a href="https://carto.com/attributions">CARTO</a>'
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> | &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            ...tileLayerOptions
         }),
         'ESRI Satellite': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
             attribution: '&copy; <a href="https://www.esri.com/">Esri</a>, DigitalGlobe, GeoEye, Earthstar Geographics, CNES/Airbus DS, USDA, USGS, AeroGRID, IGN'
@@ -250,13 +282,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const addMarkerToMap = (location) => {
         const lat = parseFloat(location.latitude);
-        const lng = parseFloat(location.longitude);
+        let lng = parseFloat(location.longitude);
         
         // Validate coordinates
         if (isNaN(lat) || isNaN(lng) || (lat === 0 && lng === 0)) {
             console.error('Invalid coordinates for marker:', location);
             return null; // Return null to indicate failure
         }
+        
+        // Normalize longitude to be within -180 to 180 range (wrap around the map)
+        lng = ((lng + 180) % 360) - 180;
         
         // Check if this location is already on the map
         if (location.id && displayedLocationIds.has(location.id)) {
@@ -277,7 +312,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const marker = L.marker([lat, lng], { icon });
         
         marker.addTo(map);
-        marker.on('click', () => openViewModal(location));
+        marker.on('click', () => {
+            console.log('Marker clicked for location:', location.id);
+            openViewModal(location);
+        });
         
         // Add a subtle pulse animation for new markers
         const markerElement = marker.getElement();
@@ -291,14 +329,30 @@ document.addEventListener('DOMContentLoaded', () => {
         // Track this location as displayed
         if (location.id) {
             displayedLocationIds.add(location.id);
+            // Keep track of all markers for repositioning if needed
+            allMarkers.set(location.id, marker);
         }
         
         return marker; // Return the marker for potential future use
     };
 
     const openViewModal = async (location) => {
+        // Input validation
+        if (!location || !location.id) {
+            console.error('Invalid location object:', location);
+            showToast('Error: Invalid location data', 'error');
+            return;
+        }
+        
+        console.log('Opening view modal for location:', location);
         activeLocationId = location.id;
         const modalImage = document.getElementById('modal-image');
+        
+        if (!modalImage) {
+            console.error('Modal image element not found');
+            return;
+        }
+        
         modalImage.innerHTML = '';
         modalImage.style.backgroundImage = '';
         const fileUrl = location.imageUrl;
@@ -322,7 +376,11 @@ document.addEventListener('DOMContentLoaded', () => {
         reportBtn.disabled = !!sessionStorage.getItem(`reported_${location.id}`);
         reportBtn.textContent = reportBtn.disabled ? 'Reported' : 'Report Post';
         
+        // Make sure to force the modal to be visible
         viewModal.style.display = 'flex';
+        viewModal.style.opacity = '1';
+        viewModal.style.pointerEvents = 'auto';
+        console.log('Opening view modal for location:', location.id);
         
         const commentsList = document.getElementById('comments-list');
         commentsList.innerHTML = '<em>Loading...</em>';
@@ -347,20 +405,59 @@ document.addEventListener('DOMContentLoaded', () => {
         tempMarker = L.marker(latlng, { icon: tempIcon }).addTo(map);
         document.getElementById('latitude').value = latlng.lat;
         document.getElementById('longitude').value = latlng.lng;
+        
+        // Make sure to force the modal to be visible
         addModal.style.display = 'flex';
+        addModal.style.opacity = '1';
+        addModal.style.pointerEvents = 'auto';
+        console.log('Opening add modal at coordinates:', latlng);
+        
         document.getElementById('name').focus();
     };
 
     const closeModal = () => {
+        console.log('Closing all modals');
+        
+        // Ensure full reset of modal states
         addModal.style.display = 'none';
+        addModal.style.opacity = '0';
+        addModal.style.pointerEvents = 'none';
+        
         viewModal.style.display = 'none';
+        viewModal.style.opacity = '0';
+        viewModal.style.pointerEvents = 'none';
+        
+        // Reset forms
         locationForm.reset();
         commentForm.reset();
-        if (tempMarker) { map.removeLayer(tempMarker); tempMarker = null; }
+        
+        // Remove temp marker if exists
+        if (tempMarker) { 
+            map.removeLayer(tempMarker); 
+            tempMarker = null; 
+        }
     };
 
-    map.on('click', (e) => { if (e.originalEvent.target.classList.contains('leaflet-container')) openAddModal(e.latlng); });
-    document.querySelectorAll('.modal-close').forEach(btn => btn.addEventListener('click', closeModal));
+    // Improved map click handler with debug logging
+    map.on('click', (e) => { 
+        console.log('Map clicked at:', e.latlng);
+        console.log('Click target:', e.originalEvent.target);
+        
+        // Check if click is on the map container (not on markers or controls)
+        if (e.originalEvent.target.classList.contains('leaflet-container')) {
+            console.log('Valid map container click, opening add modal');
+            openAddModal(e.latlng);
+        } else {
+            console.log('Click was on a different element, not opening modal');
+        }
+    });
+    
+    document.querySelectorAll('.modal-close').forEach(btn => {
+        btn.addEventListener('click', () => {
+            console.log('Close button clicked');
+            closeModal();
+        });
+    });
 
     locationForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -462,13 +559,37 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=5`);
             const data = await response.json();
             if (data && data.length > 0) {
-                if (data.length === 1) { const { lat, lon, display_name } = data[0]; map.flyTo([lat, lon], 14); showToast(`Found: ${display_name}`); }
-                else {
+                if (data.length === 1) { 
+                    // Single result - fly directly to it
+                    const { lat, lon, display_name } = data[0]; 
+                    // Ensure we don't go below minimum zoom
+                    const zoomLevel = Math.max(14, map.getMinZoom());
+                    map.flyTo([lat, lon], zoomLevel); 
+                    showToast(`Found: ${display_name}`); 
+                } else {
+                    // Multiple results - show in dropdown
                     showToast(`Found ${data.length} results. Please choose one.`);
-                    data.forEach(result => { const item = document.createElement('div'); item.className = 'search-result-item'; item.textContent = result.display_name; item.addEventListener('click', () => { const { lat, lon } = result; map.flyTo([lat, lon], 14); searchResultsContainer.innerHTML = ''; }); searchResultsContainer.appendChild(item); });
+                    data.forEach(result => { 
+                        const item = document.createElement('div'); 
+                        item.className = 'search-result-item'; 
+                        item.textContent = result.display_name; 
+                        item.addEventListener('click', () => { 
+                            const { lat, lon } = result; 
+                            // Ensure we don't go below minimum zoom
+                            const zoomLevel = Math.max(14, map.getMinZoom());
+                            map.flyTo([lat, lon], zoomLevel); 
+                            searchResultsContainer.innerHTML = ''; 
+                            triggerHaptic(); // Add haptic feedback when selecting a location
+                        }); 
+                        searchResultsContainer.appendChild(item); 
+                    });
                 }
-            } else { showToast('Location not found.'); }
-        } catch (error) { showToast('Error searching for location.');
+            } else { 
+                showToast('Location not found.'); 
+            }
+        } catch (error) { 
+            console.error('Search error:', error);
+            showToast('Error searching for location.');
         } finally {
             searchButton.disabled = false;
             searchButton.textContent = 'GO';
@@ -478,7 +599,8 @@ document.addEventListener('DOMContentLoaded', () => {
     resetZoomBtn.addEventListener('click', () => {
         triggerHaptic();
         if (userLocationMarker) { map.removeLayer(userLocationMarker); userLocationMarker = null; }
-        map.flyTo([20, 0], 3);
+        const homeView = getHomeView();
+        map.flyTo([homeView.lat, homeView.lng], Math.max(homeView.zoom, 2)); // Ensure minimum zoom level
     });
 
     locateUserBtn.addEventListener('click', () => {
@@ -489,7 +611,9 @@ document.addEventListener('DOMContentLoaded', () => {
             (position) => {
                 const { latitude, longitude } = position.coords;
                 if (userLocationMarker) map.removeLayer(userLocationMarker);
-                map.flyTo([latitude, longitude], 15);
+                // Ensure we don't go below minimum zoom
+                const zoomLevel = Math.max(15, map.getMinZoom());
+                map.flyTo([latitude, longitude], zoomLevel);
                 const userIcon = L.divIcon({ className: 'mapchan-marker color-white', iconSize: [18, 18], iconAnchor: [9, 9] });
                 userLocationMarker = L.marker([latitude, longitude], { icon: userIcon }).addTo(map).bindPopup('<b>You are here.</b>').openPopup();
                 locateUserBtn.textContent = '◎';
@@ -545,10 +669,30 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Initial load of locations
     const loadLocations = () => {
-        fetch('/api/locations')
-            .then(res => res.ok ? res.json() : Promise.reject(new Error(`HTTP ${res.status}`)))
+        fetch('/api/locations', { 
+            headers: { 'Accept': 'application/json' } // Explicitly request JSON response
+        })
+            .then(res => {
+                if (!res.ok) {
+                    // Log additional details for debugging
+                    console.error(`HTTP Error: ${res.status} ${res.statusText}`);
+                    return Promise.reject(new Error(`HTTP ${res.status}`));
+                }
+                
+                // Check the content type to ensure we're getting JSON
+                const contentType = res.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    console.error(`Expected JSON but got ${contentType || 'unknown content type'}`);
+                    return Promise.reject(new Error('API returned non-JSON response'));
+                }
+                
+                return res.json();
+            })
             .then(locations => {
-                if (!Array.isArray(locations)) throw new Error('API response is not an array.');
+                if (!Array.isArray(locations)) {
+                    console.error('API response is not an array:', locations);
+                    throw new Error('API response is not an array.');
+                }
                 
                 // Add markers for locations not already on the map
                 locations.forEach(location => {
@@ -569,8 +713,64 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial load
     loadLocations();
     
+    // Diagnostic function to verify modals
+    setTimeout(() => {
+        console.log('Modal visibility check:');
+        console.log('- Add modal display:', addModal.style.display);
+        console.log('- View modal display:', viewModal.style.display);
+        console.log('- Add modal computed style:', window.getComputedStyle(addModal).display);
+        console.log('- View modal computed style:', window.getComputedStyle(viewModal).display);
+    }, 2000);
+    
     // Periodically check for new locations (every 60 seconds)
     const locationCheckInterval = setInterval(loadLocations, 60000);
+    
+    // Keep track of all markers for repositioning if needed
+    const allMarkers = new Map(); // Map of location ID to marker object
+    
+    // Function to normalize existing markers to the main Earth view
+    function normalizeMarkerPositions() {
+        // Get the current map bounds for the visible world
+        const mapBounds = map.getBounds();
+        const visibleBounds = L.latLngBounds(
+            L.latLng(-90, -180),  // Southwest corner
+            L.latLng(90, 180)     // Northeast corner
+        );
+        
+        allMarkers.forEach((marker, locationId) => {
+            const position = marker.getLatLng();
+            let lng = position.lng;
+            const lat = position.lat;
+            
+            // If longitude is outside -180 to 180 range, normalize it
+            if (lng < -180 || lng > 180) {
+                lng = ((lng + 180) % 360) - 180;
+                console.log(`Normalized marker ${locationId} from ${position.lng} to ${lng}`);
+                
+                // Update marker position
+                marker.setLatLng([lat, lng]);
+            }
+            
+            // Check if the marker is in the visible bounds
+            if (!visibleBounds.contains(marker.getLatLng())) {
+                // Calculate the normalized position
+                const normalizedLng = ((lng + 180) % 360) - 180;
+                
+                // Only update if it's different from the current position
+                if (normalizedLng !== lng) {
+                    marker.setLatLng([lat, normalizedLng]);
+                    console.log(`Moved marker ${locationId} to visible bounds: ${normalizedLng}`);
+                }
+            }
+        });
+    }
+    
+    // Periodically check and normalize marker positions
+    const markerNormalizeInterval = setInterval(normalizeMarkerPositions, 5000);
+    
+    // Also normalize markers when map view changes significantly
+    map.on('moveend', normalizeMarkerPositions);
+    map.on('zoomend', normalizeMarkerPositions);
     
     function createCustomLayerControl(baseLayers, overlays, map) {
         const dropdownBtn = document.getElementById('layer-dropdown-btn');
@@ -620,9 +820,14 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const getHomeView = () => {
             const saved = localStorage.getItem('oddmapchan-home-view');
-            if (saved) return JSON.parse(saved);
+            if (saved) {
+                const parsedView = JSON.parse(saved);
+                // Ensure zoom level is not too low
+                parsedView.zoom = Math.max(parsedView.zoom, 2);
+                return parsedView;
+            }
             const isMobile = window.innerWidth <= 768;
-            return { lat: 20, lng: 0, zoom: isMobile ? 1 : 3 };
+            return { lat: 20, lng: 0, zoom: isMobile ? 2 : 3 };
         };
         
         const saveHomeView = () => {
@@ -686,5 +891,41 @@ document.addEventListener('DOMContentLoaded', () => {
     // Clean up intervals when the page is unloaded
     window.addEventListener('beforeunload', () => {
         clearInterval(locationCheckInterval);
+        clearInterval(markerNormalizeInterval);
     });
+    
+    // Initialize UI event listeners
+    document.addEventListener('click', (e) => {
+        // Hide search results when clicking outside the search container
+        if (!searchForm.contains(e.target) && !searchResultsContainer.contains(e.target)) {
+            searchResultsContainer.innerHTML = '';
+        }
+    });
+    
+    // Helper function to ensure the map only shows one world
+    function enforceSingleWorldView() {
+        // Enforce bounds
+        const bounds = L.latLngBounds(
+            L.latLng(-90, -180),  // Southwest corner
+            L.latLng(90, 180)     // Northeast corner
+        );
+        
+        // If the current view is too zoomed out, adjust it
+        if (map.getZoom() < map.getMinZoom()) {
+            map.setZoom(map.getMinZoom());
+        }
+        
+        // If the current view is outside the bounds, bring it back
+        if (!bounds.contains(map.getCenter())) {
+            const center = map.getCenter();
+            const wrappedLng = ((center.lng + 180) % 360) - 180;
+            map.panTo([center.lat, wrappedLng]);
+        }
+    }
+    
+    // Apply single world view after the map is loaded
+    map.on('load', enforceSingleWorldView);
+    
+    // Also check whenever the zoom ends
+    map.on('zoomend', enforceSingleWorldView);
 });
