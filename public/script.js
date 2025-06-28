@@ -1,6 +1,6 @@
 // Register service worker for caching (only in production)
-// Font: Lora loaded from Bunny Fonts CDN (privacy-focused alternative to Google Fonts)
-// All UI elements use Lora with fallbacks to Georgia, Times New Roman, serif
+// Font: VT323 loaded from Bunny Fonts CDN (privacy-focused alternative to Google Fonts)
+// All UI elements use VT323 with fallbacks to monospace fonts for retro/terminal aesthetic
 if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js')
@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.removeChild(mapLoading);
         }
         // Set initial display name for current layer
-        document.getElementById('current-layer-name').textContent = 'Night Earth';
+        document.getElementById('current-layer-name').textContent = 'Carto Dark';
     });
 
     const addModal = document.getElementById('add-modal');
@@ -104,9 +104,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Define tile layers
     const tileLayers = {
-        // Night Earth - actual night lights satellite imagery using a reliable source
-        'Night Earth': L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors',
+        // Night Earth - NASA VIIRS City Lights satellite imagery
+        'Night Earth': L.tileLayer('https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_CityLights_2012/default/{time}/{z}/{y}/{x}.png', {
+            attribution: 'Imagery provided by services from the Global Imagery Browse Services (GIBS), operated by the NASA/GSFC/Earth Science Data and Information System (<a href="https://earthdata.nasa.gov">ESDIS</a>) with funding provided by NASA/HQ.',
+            maxZoom: 8,
+            time: '2016-01-01',
             ...tileLayerOptions
         }),
         // Alternative dark theme
@@ -119,12 +121,13 @@ document.addEventListener('DOMContentLoaded', () => {
             ...tileLayerOptions
         }),
         'OpenStreetMap': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 19,
             ...tileLayerOptions
         }),
-        'OSM Germany': L.tileLayer('https://{s}.tile.openstreetmap.de/tiles/osmde/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> | &copy; <a href="https://www.openstreetmap.de/">OpenStreetMap Deutschland</a>',
-            subdomains: ['a', 'b', 'c'],
+        'OpenStreetMap Localized': L.tileLayer('https://{s}.tile.openstreetmap.de/tiles/osmde/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 18,
             ...tileLayerOptions
         }),
         'OSM France': L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
@@ -132,9 +135,9 @@ document.addEventListener('DOMContentLoaded', () => {
             subdomains: ['a', 'b', 'c'],
             ...tileLayerOptions
         }),
-        'OSM Netherlands': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-            subdomains: ['a', 'b', 'c'],
+        'OSM Netherlands': L.tileLayer('https://tile.openstreetmap.nl/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | &copy; <a href="https://www.openstreetmap.nl/">OpenStreetMap Nederland</a>',
+            maxZoom: 19,
             ...tileLayerOptions
         }),
         'OSM Switzerland': L.tileLayer('https://tile.osm.ch/switzerland/{z}/{x}/{y}.png', {
@@ -253,8 +256,8 @@ document.addEventListener('DOMContentLoaded', () => {
         })
     };
     
-    // Add default layer (now 'Night Earth')
-    tileLayers['Night Earth'].addTo(map);
+    // Add default layer (now 'Carto Dark')
+    tileLayers['Carto Dark'].addTo(map);
     
     // Create custom layer dropdown instead of default Leaflet control
     createCustomLayerControl(tileLayers, overlayLayers, map);
@@ -808,7 +811,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const overlayControls = document.getElementById('overlay-controls');
         const baseLayerControls = document.getElementById('base-layer-controls');
         const currentLayerName = document.getElementById('current-layer-name');
-        let currentBaseLayer = 'Night Earth';
+        let currentBaseLayer = 'Carto Dark';
 
         Object.entries(overlays).forEach(([name, layer]) => {
             const option = document.createElement('div');
