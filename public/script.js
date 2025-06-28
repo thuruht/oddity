@@ -125,6 +125,11 @@ document.addEventListener('DOMContentLoaded', () => {
             maxZoom: 19,
             ...tileLayerOptions
         }),
+        'Public Transport': L.tileLayer('https://tile.memomaps.de/tilegen/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> | &copy; <a href="https://memomaps.de/">MeMoMaps</a>',
+            maxZoom: 18,
+            ...tileLayerOptions
+        }),
         'OpenStreetMap Localized': L.tileLayer('https://{s}.tile.openstreetmap.de/tiles/osmde/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
             maxZoom: 18,
@@ -241,10 +246,6 @@ document.addEventListener('DOMContentLoaded', () => {
         'Railway Lines': L.tileLayer('https://{s}.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> | &copy; <a href="https://www.openrailwaymap.org/">OpenRailwayMap</a>',
             maxZoom: 19, transparent: true, opacity: 0.7, pane: 'overlayPane'
-        }),
-        'Public Transport': L.tileLayer('https://tile.memomaps.de/tilegen/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> | &copy; <a href="https://memomaps.de/">MeMoMaps</a>',
-            maxZoom: 18, transparent: true, opacity: 0.8, pane: 'overlayPane'
         }),
         'Cycling Routes': L.tileLayer('https://tile.waymarkedtrails.org/cycling/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> | &copy; <a href="https://waymarkedtrails.org/">Waymarked Trails</a>',
@@ -629,12 +630,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    resetZoomBtn.addEventListener('click', () => {
-        triggerHaptic();
-        if (userLocationMarker) { map.removeLayer(userLocationMarker); userLocationMarker = null; }
-        const homeView = getHomeView();
-        map.flyTo([homeView.lat, homeView.lng], Math.max(homeView.zoom, 2)); // Ensure minimum zoom level
-    });
+    // resetZoomBtn is handled in initializeHomeView() function
 
     locateUserBtn.addEventListener('click', () => {
         triggerHaptic();
@@ -870,8 +866,13 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         
         const resetToHome = () => {
+            // Remove user location marker if it exists
+            if (userLocationMarker) { 
+                map.removeLayer(userLocationMarker); 
+                userLocationMarker = null; 
+            }
             const homeView = getHomeView();
-            map.setView([homeView.lat, homeView.lng], homeView.zoom);
+            map.flyTo([homeView.lat, homeView.lng], Math.max(homeView.zoom, 2)); // Ensure minimum zoom level
         };
         
         const startPress = (e) => {

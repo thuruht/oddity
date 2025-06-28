@@ -187,10 +187,10 @@ body, html {
 /* --- SEARCH BAR --- */
 .search-container { 
     position: absolute; 
-    top: clamp(170px, 28vw, 195px); /* Positioned below the layer dropdown */
+    top: clamp(170px, 28vw, 195px); /* Positioned BELOW the layer dropdown */
     left: 50%; 
     transform: translateX(-50%); /* Center the search bar */
-    z-index: 1002; /* Increased z-index to appear above controls */
+    z-index: 1002; /* Search below dropdown when dropdown is open */
     border: 1px solid var(--primary-accent); 
     background-color: var(--input-bg); 
     box-shadow: 0 0 10px rgba(0, 255, 65, 0.3); 
@@ -1265,7 +1265,7 @@ button:active {
 @media (max-width: 768px) {
     .layer-dropdown-container {
         width: clamp(260px, 80vw, 350px);
-        top: clamp(85px, 14vw, 105px); /* Moved to higher position on mobile (above search) */
+        top: clamp(85px, 14vw, 105px);
     }
     
     .layer-dropdown-btn {
