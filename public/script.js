@@ -726,7 +726,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const locationCheckInterval = setInterval(loadLocations, 60000);
     
     // Keep track of all markers for repositioning if needed
-    const allMarkers = new Map(); // Map of location ID to marker object
+    // allMarkers map is already defined near the top of the file
     
     // Function to normalize existing markers to the main Earth view
     function normalizeMarkerPositions() {
@@ -877,7 +877,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 tabButtons.forEach(btn => btn.classList.remove('active'));
                 tabContents.forEach(content => content.classList.remove('active'));
                 button.classList.add('active');
-                helpModal.querySelector(`#${tabId}-tab`).classList.add('active');
+                const targetTab = helpModal.querySelector(`#${tabId}-tab`);
+                if (targetTab) targetTab.classList.add('active');
             });
         });
         
