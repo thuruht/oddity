@@ -289,16 +289,84 @@ body, html {
     font-size: clamp(14px, 2.5vw, 16px);
     font-family: 'VT323', monospace;
     transition: all 0.2s ease;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal; /* Allow text to wrap for better readability */
+    word-break: break-word; /* Break long words if needed */
+    position: relative;
+    line-height: 1.3; /* Improve readability for wrapped text */
 }
+
 .search-result-item:last-child {
     border-bottom: none;
 }
 .search-result-item:hover { 
     background: var(--primary-accent); 
     color: #000; 
+}
+
+/* Universal tooltip style for both desktop and mobile */
+/* Override default browser tooltip */
+[title] {
+    position: relative;
+    overflow: visible;
+}
+
+/* Apply to all elements with title attribute, including search results */
+[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-10px);
+    background-color: rgba(0, 0, 0, 0.85);
+    color: var(--text-color);
+    border: 1px solid var(--primary-accent);
+    padding: 6px 10px;
+    border-radius: 4px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+    max-width: 250px;
+    font-family: 'VT323', monospace;
+    font-size: 14px;
+    opacity: 0;
+    pointer-events: none;
+    word-wrap: break-word;
+    white-space: normal;
+    text-align: center;
+    z-index: 2000;
+    animation: fadeInTooltip 0.3s ease forwards;
+}
+
+@keyframes fadeInTooltip {
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(-5px);
+    }
+}
+
+/* Mobile tooltip */
+.mobile-tooltip {
+    position: fixed;
+    z-index: 2000;
+    background-color: rgba(0, 0, 0, 0.85);
+    color: var(--text-color);
+    border: 1px solid var(--primary-accent);
+    padding: 6px 10px;
+    border-radius: 4px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+    max-width: 300px; /* Match the hover tooltip width */
+    font-family: 'VT323', monospace;
+    font-size: 14px;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.2s, transform 0.2s;
+    pointer-events: none;
+    word-wrap: break-word;
+    white-space: normal;
+    text-align: center;
+}
+
+.mobile-tooltip.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-105%); /* Match hover tooltip animation */
 }
 
 /* --- MODALS & FORMS --- */
@@ -1183,8 +1251,7 @@ button:active {
     z-index: 1000;
     background-color: var(--background);
     border-radius: 4px;
-    min-width: 240px;
-    max-width: 90vw;
+    width: 100%; /* Match parent width */
     box-shadow: 0 3px 12px rgba(0, 0, 0, 0.25);
     display: none;
     max-height: 80vh;
@@ -1213,6 +1280,20 @@ button:active {
     border-bottom: 1px solid var(--border-color);
 }
 
+/* Base maps section - two column layout */
+.category-options {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+@media (max-width: 576px) {
+    .category-options {
+        grid-template-columns: 1fr; /* Single column on small devices */
+    }
+}
+
 .layer-section:last-child {
     border-bottom: none;
 }
@@ -1239,6 +1320,8 @@ button:active {
     display: block;
     width: calc(100% - 16px);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    /* Ensure category headers span both columns */
+    grid-column: 1 / -1;
 }
 
 .layer-option {
@@ -1251,6 +1334,11 @@ button:active {
     padding-left: 8px;
     margin-left: 4px; /* Indent options under categories */
     margin-bottom: 2px;
+    /* Truncate text with ellipsis for two columns */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
 }
 
 .layer-option:hover {
@@ -1273,6 +1361,10 @@ button:active {
     font-size: 14px;
     line-height: 1.3;
     font-family: 'VT323', monospace;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: calc(100% - 25px);
 }
 
 /* Custom scrollbar for layer dropdown */

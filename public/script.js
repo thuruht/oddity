@@ -360,6 +360,40 @@ document.addEventListener('DOMContentLoaded', () => {
             playAudio('success');
         }
     };
+    
+    // Function to show a mobile-friendly tooltip
+    function showMobileTooltip(element, text) {
+        // Remove any existing tooltip
+        hideMobileTooltip();
+        
+        // Create tooltip element
+        const tooltip = document.createElement('div');
+        tooltip.className = 'mobile-tooltip';
+        tooltip.textContent = text;
+        tooltip.id = 'mobile-tooltip';
+        
+        // Position the tooltip
+        const rect = element.getBoundingClientRect();
+        document.body.appendChild(tooltip);
+        
+        // Position above the element, matching hover tooltip positioning
+        tooltip.style.left = '50%';
+        tooltip.style.top = `${rect.top - 10}px`; // Position above instead of below
+        tooltip.style.transform = 'translateX(-50%) translateY(-100%)'; // Move up by its own height
+        
+        // Show with animation
+        setTimeout(() => tooltip.classList.add('show'), 10);
+    }
+    
+    // Function to hide the mobile tooltip
+    function hideMobileTooltip() {
+        const tooltip = document.getElementById('mobile-tooltip');
+        if (tooltip) {
+            tooltip.classList.remove('show');
+            setTimeout(() => tooltip.remove(), 300);
+        }
+    }
+    
     function triggerHaptic() {
         if ('vibrate' in navigator) navigator.vibrate(20);
     }
@@ -688,6 +722,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         const item = document.createElement('div'); 
                         item.className = 'search-result-item'; 
                         item.textContent = result.display_name; 
+                        
+                        // ONLY add click event for navigation - NO tooltips
                         item.addEventListener('click', () => { 
                             const { lat, lon } = result; 
                             // Ensure we don't go below minimum zoom
@@ -926,6 +962,11 @@ document.addEventListener('DOMContentLoaded', () => {
             categoryHeader.textContent = category.name;
             baseLayerControls.appendChild(categoryHeader);
             
+            // Create a container for this category's options
+            const categoryContainer = document.createElement('div');
+            categoryContainer.className = 'category-options';
+            baseLayerControls.appendChild(categoryContainer);
+            
             // Add maps that belong to this category
             category.items.forEach(name => {
                 // Skip if the map doesn't exist in the baseLayers
@@ -946,7 +987,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         dropdownMenu.classList.remove('active');
                     }
                 });
-                baseLayerControls.appendChild(option);
+                categoryContainer.appendChild(option);
             });
         });
         
