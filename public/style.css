@@ -32,6 +32,21 @@ body, html {
     cursor: crosshair;
 }
 
+/* Fix for Chromium-based browsers to prevent UI elements from disappearing */
+.leaflet-container {
+    z-index: 1 !important;
+}
+
+.leaflet-top,
+.leaflet-bottom {
+    z-index: 1000 !important;
+}
+
+/* Ensures all controls appear above the map */
+.leaflet-control {
+    z-index: 1000 !important;
+}
+
 /* Removed filter to improve visibility of dark tile layers */
 /* .leaflet-tile-pane {
     filter: brightness(0.8) contrast(1.1) grayscale(0.1);
@@ -58,6 +73,12 @@ body, html {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    pointer-events: auto !important; /* Ensures clickability on all browsers */
+    -webkit-transform: translateZ(0); /* Prevents disappearing in Chrome */
+    transform: translateZ(0);
+    will-change: transform; /* Helps prevent the element from disappearing */
+    backface-visibility: hidden; /* Additional fix for Chrome */
+    perspective: 1000; /* Force GPU rendering */
 }
 
 .intro-container:hover {
@@ -1156,15 +1177,19 @@ button:active {
 }
 
 .layer-dropdown-menu {
+    position: absolute;
+    top: 110%;
+    left: 0;
+    z-index: 1000;
+    background-color: var(--background);
+    border-radius: 4px;
+    min-width: 240px;
+    max-width: 90vw;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.25);
     display: none;
-    background: var(--component-bg);
-    border: 1px solid var(--primary-accent);
-    border-top: none;
-    max-height: 60vh;
+    max-height: 80vh;
     overflow-y: auto;
-    box-shadow: 0 5px 15px rgba(0, 255, 65, 0.3);
-    z-index: 1015; /* Even higher to ensure it covers search results */
-    position: relative;
+    border: 1px solid var(--border-color);
 }
 
 .layer-dropdown-menu.active {
@@ -1184,7 +1209,7 @@ button:active {
 }
 
 .layer-section {
-    padding: 15px;
+    padding: 10px;
     border-bottom: 1px solid var(--border-color);
 }
 
@@ -1193,15 +1218,27 @@ button:active {
 }
 
 .layer-section h4 {
-    color: var(--primary-accent);
     margin: 0 0 10px 0;
     font-size: 14px;
-    text-align: center;
-    font-family: 'VT323', monospace;
+    font-weight: bold;
+    color: var(--text-color);
 }
 
-.layer-section:first-child h4 {
-    color: var(--secondary-accent);
+.layer-category-header {
+    background-color: var(--background);
+    color: var(--primary-accent);
+    padding: 5px 8px;
+    margin: 12px 0 6px 0;
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    border-radius: 3px;
+    text-align: left;
+    letter-spacing: 0.7px;
+    border-left: 3px solid var(--primary-accent);
+    display: block;
+    width: calc(100% - 16px);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .layer-option {
@@ -1212,10 +1249,12 @@ button:active {
     transition: background-color 0.2s ease;
     border-radius: 3px;
     padding-left: 8px;
+    margin-left: 4px; /* Indent options under categories */
+    margin-bottom: 2px;
 }
 
 .layer-option:hover {
-    background-color: rgba(0, 255, 65, 0.1);
+    background-color: var(--hover-color);
 }
 
 .layer-option input[type="radio"],

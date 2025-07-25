@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.removeChild(mapLoading);
         }
         // Set initial display name for current layer
-        document.getElementById('current-layer-name').textContent = 'Carto Dark';
+        document.getElementById('current-layer-name').textContent = 'Spinal Map';
     });
 
     const addModal = document.getElementById('add-modal');
@@ -104,11 +104,16 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Define tile layers
     const tileLayers = {
+        // ========== DARK & NIGHT MAPS ==========
         // Night Earth - NASA VIIRS City Lights satellite imagery
-        'Night Earth': L.tileLayer('https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_CityLights_2012/default/{time}/{z}/{y}/{x}.png', {
-            attribution: 'Imagery provided by services from the Global Imagery Browse Services (GIBS), operated by the NASA/GSFC/Earth Science Data and Information System (<a href="https://earthdata.nasa.gov">ESDIS</a>) with funding provided by NASA/HQ.',
+        'NASA City Lights': L.tileLayer('https://map1.vis.earthdata.nasa.gov/wmts-webmerc/VIIRS_CityLights_2012/default/{time}/{tilematrixset}{maxZoom}/{z}/{y}/{x}.{format}', {
+            attribution: '&copy; <a href="https://nasa.gov/">NASA</a>',
+            bounds: [[-85.0511287776, -179.999999975], [85.0511287776, 179.999999975]],
+            minZoom: 1,
             maxZoom: 8,
-            time: '2016-01-01',
+            format: 'jpg',
+            time: '',
+            tilematrixset: 'GoogleMapsCompatible_Level',
             ...tileLayerOptions
         }),
         // Alternative dark theme
@@ -116,10 +121,39 @@ document.addEventListener('DOMContentLoaded', () => {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> | &copy; <a href="https://carto.com/attributions">CARTO</a>',
             ...tileLayerOptions
         }),
+        'CartoDB Dark (No Labels)': L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> | &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            ...tileLayerOptions
+        }),
+        'ESRI World Dark Gray': L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+            attribution: '&copy; <a href="https://www.esri.com/">Esri</a>',
+            maxZoom: 16,
+            ...tileLayerOptions
+        }),
+        
+        // ========== SATELLITE & IMAGERY ==========
         'ESRI Satellite': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
             attribution: '&copy; <a href="https://www.esri.com/">Esri</a>, DigitalGlobe, GeoEye, Earthstar Geographics, CNES/Airbus DS, USDA, USGS, AeroGRID, IGN',
             ...tileLayerOptions
         }),
+        'Google Satellite': L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+            attribution: '&copy; <a href="https://www.google.com/">Google</a>',
+            maxZoom: 20,
+            ...tileLayerOptions
+        }),
+        'Google Hybrid': L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+            attribution: '&copy; <a href="https://www.google.com/">Google</a>',
+            maxZoom: 20,
+            ...tileLayerOptions
+        }),
+        'USGS Imagery': L.tileLayer('https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}', {
+            attribution: '&copy; <a href="https://www.usgs.gov/">USGS</a> | <a href="https://www.doi.gov/">US Department of Interior</a>',
+            maxZoom: 16,
+            ...tileLayerOptions
+        }),
+        
+        // ========== STREET MAPS ==========
         'OpenStreetMap': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
             maxZoom: 19,
@@ -144,6 +178,11 @@ document.addEventListener('DOMContentLoaded', () => {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> | &copy; <a href="https://sosm.ch/">Swiss OpenStreetMap</a>',
             ...tileLayerOptions
         }),
+        'Public Transport': L.tileLayer('https://tile.memomaps.de/tilegen/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> | &copy; <a href="https://memomaps.de/">MeMoMaps</a>',
+            maxZoom: 18,
+            ...tileLayerOptions
+        }),
         'Positron (Light)': L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> | &copy; <a href="https://carto.com/attributions">CARTO</a>',
             ...tileLayerOptions
@@ -156,6 +195,8 @@ document.addEventListener('DOMContentLoaded', () => {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> | &copy; <a href="https://opentopomap.org">OpenTopoMap</a>',
             ...tileLayerOptions
         }),
+        
+        // ========== TOPOGRAPHIC & TERRAIN ==========
         'ESRI Topo': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
             attribution: '&copy; <a href="https://www.esri.com/">Esri</a> | &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
             ...tileLayerOptions
@@ -165,10 +206,25 @@ document.addEventListener('DOMContentLoaded', () => {
             maxZoom: 16,
             ...tileLayerOptions
         }),
+        'Google Terrain': L.tileLayer('https://mt1.google.com/vt/lyrs=p&x={x}&y={y}&z={z}', {
+            attribution: '&copy; <a href="https://www.google.com/">Google</a>',
+            maxZoom: 20,
+            ...tileLayerOptions
+        }),
+        'Stamen Terrain': L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.{ext}', {
+            attribution: '&copy; <a href="https://stamen.com/">Stamen Design</a> | &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+            subdomains: 'abcd',
+            minZoom: 0,
+            maxZoom: 18,
+            ext: 'png',
+            ...tileLayerOptions
+        }),
         'ESRI Ocean': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}', {
             attribution: '&copy; <a href="https://www.esri.com/">Esri</a> | &copy; GEBCO, NOAA, CHS, OSU, UNH, CSUMB, National Geographic, DeLorme, NAVTEQ',
             ...tileLayerOptions
         }),
+        
+        // ========== SPECIALTY MAPS ==========
         'Humanitarian': L.tileLayer('https://tile-{s}.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> | &copy; <a href="https://www.hotosm.org/">HOT</a>',
             ...tileLayerOptions
@@ -182,10 +238,20 @@ document.addEventListener('DOMContentLoaded', () => {
             maxZoom: 18,
             ...tileLayerOptions
         }),
+        
+        // ========== STYLIZED MAPS ==========
         'CartoDB Voyager': L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> | &copy; <a href="https://carto.com/attributions">CARTO</a>',
             subdomains: 'abcd',
             maxZoom: 20,
+            ...tileLayerOptions
+        }),
+        'Stamen Watercolor': L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.{ext}', {
+            attribution: '&copy; <a href="https://stamen.com/">Stamen Design</a> | &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+            subdomains: 'abcd',
+            minZoom: 1,
+            maxZoom: 16,
+            ext: 'jpg',
             ...tileLayerOptions
         }),
         'ESRI National Geographic': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}', {
@@ -203,8 +269,28 @@ document.addEventListener('DOMContentLoaded', () => {
             maxZoom: 18,
             ...tileLayerOptions
         }),
+        
+        // ========== OUTDOOR & RECREATIONAL MAPS ==========
         'ESRI Physical': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer/tile/{z}/{y}/{x}', {
             attribution: '&copy; <a href="https://www.esri.com/">Esri</a> | &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+            ...tileLayerOptions
+        }),
+        'Thunderforest Pioneer': L.tileLayer('https://{s}.tile.thunderforest.com/pioneer/{z}/{x}/{y}.png?apikey=6170aad10dfd42a38d4d8c709a536f38', {
+            attribution: '&copy; <a href="https://www.thunderforest.com/">Thunderforest</a> | <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+            subdomains: 'abc',
+            maxZoom: 22,
+            ...tileLayerOptions
+        }),
+        'Thunderforest Landscape': L.tileLayer('https://{s}.tile.thunderforest.com/landscape/{z}/{x}/{y}.png?apikey=6170aad10dfd42a38d4d8c709a536f38', {
+            attribution: '&copy; <a href="https://www.thunderforest.com/">Thunderforest</a> | <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+            subdomains: 'abc',
+            maxZoom: 22,
+            ...tileLayerOptions
+        }),
+        'Thunderforest Outdoors': L.tileLayer('https://{s}.tile.thunderforest.com/outdoors/{z}/{x}/{y}.png?apikey=6170aad10dfd42a38d4d8c709a536f38', {
+            attribution: '&copy; <a href="https://www.thunderforest.com/">Thunderforest</a> | <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+            subdomains: 'abc',
+            maxZoom: 22,
             ...tileLayerOptions
         }),
         'ESRI Shaded Relief': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}', {
@@ -242,10 +328,6 @@ document.addEventListener('DOMContentLoaded', () => {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> | &copy; <a href="https://www.openrailwaymap.org/">OpenRailwayMap</a>',
             maxZoom: 19, transparent: true, opacity: 0.7, pane: 'overlayPane'
         }),
-        'Public Transport': L.tileLayer('https://tile.memomaps.de/tilegen/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> | &copy; <a href="https://memomaps.de/">MeMoMaps</a>',
-            maxZoom: 18, transparent: true, opacity: 0.8, pane: 'overlayPane'
-        }),
         'Cycling Routes': L.tileLayer('https://tile.waymarkedtrails.org/cycling/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> | &copy; <a href="https://waymarkedtrails.org/">Waymarked Trails</a>',
             maxZoom: 18, transparent: true, opacity: 0.8, pane: 'overlayPane'
@@ -256,8 +338,8 @@ document.addEventListener('DOMContentLoaded', () => {
         })
     };
     
-    // Add default layer (now 'Carto Dark')
-    tileLayers['Carto Dark'].addTo(map);
+    // Add default layer (Spinal Map is more readable)
+    tileLayers['Spinal Map'].addTo(map);
     
     // Create custom layer dropdown instead of default Leaflet control
     createCustomLayerControl(tileLayers, overlayLayers, map);
@@ -811,8 +893,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const overlayControls = document.getElementById('overlay-controls');
         const baseLayerControls = document.getElementById('base-layer-controls');
         const currentLayerName = document.getElementById('current-layer-name');
-        let currentBaseLayer = 'Carto Dark';
+        let currentBaseLayer = 'Spinal Map';
 
+        // Define the categories and their order
+        const categories = [
+            { name: "DARK & NIGHT MAPS", items: ['NASA City Lights', 'Carto Dark', 'CartoDB Dark (No Labels)', 'ESRI World Dark Gray'] },
+            { name: "SATELLITE & IMAGERY", items: ['ESRI Satellite', 'Google Satellite', 'Google Hybrid', 'USGS Imagery'] },
+            { name: "STREET MAPS", items: ['OpenStreetMap', 'OSM France', 'OSM Netherlands', 'OSM Switzerland', 'OpenStreetMap Localized', 'Wikimedia', 'Public Transport', 'ESRI Streets', 'OSM Bright (Mapbox Style)', 'Humanitarian', 'Spinal Map'] },
+            { name: "TOPOGRAPHIC & TERRAIN", items: ['OpenTopo', 'ESRI Topo', 'USGS Topo', 'Google Terrain', 'Stamen Terrain', 'ESRI Ocean'] },
+            { name: "STYLIZED MAPS", items: ['CartoDB Voyager', 'Stamen Watercolor', 'ESRI National Geographic', 'Positron (Light)'] },
+            { name: "OUTDOOR & RECREATIONAL", items: ['ESRI Physical', 'Thunderforest Pioneer', 'Thunderforest Landscape', 'Thunderforest Outdoors', 'ESRI Shaded Relief', 'ESRI Terrain', 'ESRI Gray Canvas', 'CartoDB Positron (No Labels)', 'ESRI DeLorme', 'CyclOSM'] }
+        ];
+
+        // Add overlay controls
         Object.entries(overlays).forEach(([name, layer]) => {
             const option = document.createElement('div');
             option.className = 'layer-option';
@@ -822,23 +915,55 @@ document.addEventListener('DOMContentLoaded', () => {
             overlayControls.appendChild(option);
         });
         
-        Object.entries(baseLayers).forEach(([name, layer]) => {
-            const option = document.createElement('div');
-            option.className = 'layer-option';
-            option.innerHTML = `<input type="radio" name="base-layer" id="base-${name.replace(/\s+/g, '-')}" ${name === currentBaseLayer ? 'checked' : ''} /><label for="base-${name.replace(/\s+/g, '-')}">${name}</label>`;
-            const radio = option.querySelector('input');
-            radio.addEventListener('change', () => {
-                if (radio.checked) {
-                    map.removeLayer(baseLayers[currentBaseLayer]);
-                    layer.addTo(map);
-                    currentBaseLayer = name;
-                    currentLayerName.textContent = name;
-                }
+        // Clear existing content
+        baseLayerControls.innerHTML = '';
+        
+        // Create categories and populate with maps
+        categories.forEach(category => {
+            // Create category header
+            const categoryHeader = document.createElement('div');
+            categoryHeader.className = 'layer-category-header';
+            categoryHeader.textContent = category.name;
+            baseLayerControls.appendChild(categoryHeader);
+            
+            // Add maps that belong to this category
+            category.items.forEach(name => {
+                // Skip if the map doesn't exist in the baseLayers
+                if (!baseLayers[name]) return;
+                
+                const layer = baseLayers[name];
+                const option = document.createElement('div');
+                option.className = 'layer-option';
+                option.innerHTML = `<input type="radio" name="base-layer" id="base-${name.replace(/\s+/g, '-')}" ${name === currentBaseLayer ? 'checked' : ''} /><label for="base-${name.replace(/\s+/g, '-')}">${name}</label>`;
+                const radio = option.querySelector('input');
+                radio.addEventListener('change', () => {
+                    if (radio.checked) {
+                        map.removeLayer(baseLayers[currentBaseLayer]);
+                        layer.addTo(map);
+                        currentBaseLayer = name;
+                        currentLayerName.textContent = name;
+                        // Close the dropdown when a selection is made
+                        dropdownMenu.classList.remove('active');
+                    }
+                });
+                baseLayerControls.appendChild(option);
             });
-            baseLayerControls.appendChild(option);
         });
         
-        dropdownBtn.addEventListener('click', () => dropdownMenu.classList.toggle('active'));
+        // Set up dropdown toggle
+        dropdownBtn.addEventListener('click', () => {
+            dropdownMenu.classList.toggle('active');
+            // Force a repaint to ensure categories are displayed correctly
+            setTimeout(() => {
+                const headers = baseLayerControls.querySelectorAll('.layer-category-header');
+                headers.forEach(h => {
+                    h.style.display = 'none';
+                    setTimeout(() => h.style.display = 'block', 0);
+                });
+            }, 0);
+        });
+        
+        // Close dropdown when clicking outside
         document.addEventListener('click', (e) => {
             if (!dropdownBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
                 dropdownMenu.classList.remove('active');
